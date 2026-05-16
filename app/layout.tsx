@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Next.js on Replit',
-  description: 'Deploy your Next.js application to Replit'
+  title: 'FinSight',
+  description: 'Personal finance document analysis'
 };
 
 export default function RootLayout({
@@ -12,7 +13,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="theme-light">{children}</body>
     </html>
   );
 }
