@@ -23,15 +23,21 @@ export default function Home() {
     setSubtitle(PHRASES[Math.floor(Math.random() * PHRASES.length)]);
   }, []);
 
-  function handleSend(text: string) {
-    setMessages((prev) => [
-      ...prev,
-      { role: 'user', text },
-      {
-        role: 'assistant',
-        text: 'Mock: processing your query against uploaded documents…',
-      },
-    ]);
+  async function handleSend(text: string) {
+    setMessages((prev) => [...prev, { role: 'user', text }, { role: 'assistant', text: 'Thinking…' }]);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+      });
+      const data = await res.json();
+      const answer = res.ok ? data.answer : `Error: ${data.detail ?? 'Something went wrong'}`;
+      setMessages((prev) => [...prev.slice(0, -1), { role: 'assistant', text: answer }]);
+    } catch {
+      setMessages((prev) => [...prev.slice(0, -1), { role: 'assistant', text: 'Failed to reach the server. Is the backend running?' }]);
+    }
   }
 
   return (
