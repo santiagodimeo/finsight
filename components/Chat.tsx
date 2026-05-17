@@ -35,26 +35,33 @@ export default function Chat({ messages, onSend }: Props) {
         className="flex flex-col h-80 overflow-hidden"
         style={{ border: '1px solid var(--theme-border)', background: 'var(--theme-background)' }}
       >
-        <ul className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+        <div
+          className="flex-1 overflow-y-auto flex flex-col gap-3"
+          style={{ padding: '1rem' }}
+        >
           {messages.length === 0 && (
-            <li
+            <div
               className="text-sm text-center mt-8"
               style={{ color: 'var(--theme-text)', opacity: 0.45 }}
             >
               Ask a question about your uploaded documents.
-            </li>
+            </div>
           )}
           {messages.map((msg, i) => (
-            <li
+            <div
               key={i}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <span
-                className="px-4 py-2 text-sm break-words"
+                className="text-sm break-words"
                 style={{
                   display: 'inline-block',
                   boxSizing: 'border-box',
                   maxWidth: '80%',
+                  paddingTop: '0.5rem',
+                  paddingBottom: '0.5rem',
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
                   ...(msg.role === 'user'
                     ? { background: 'var(--theme-button)', color: 'var(--theme-button-text)' }
                     : { background: 'var(--theme-background-input)', color: 'var(--theme-text)' }),
@@ -62,9 +69,9 @@ export default function Chat({ messages, onSend }: Props) {
               >
                 {msg.text}
               </span>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
         <form
           onSubmit={handleSubmit}
           className="p-3 flex gap-2"
