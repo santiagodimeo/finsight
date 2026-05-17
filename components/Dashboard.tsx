@@ -1,5 +1,12 @@
+export interface Stats {
+  total_spending: number;
+  total_income: number;
+  largest_transaction: number;
+}
+
 interface Props {
   documentCount: number;
+  stats: Stats | null;
 }
 
 interface Card {
@@ -7,11 +14,24 @@ interface Card {
   value: string;
 }
 
-export default function Dashboard({ documentCount }: Props) {
+function formatCurrency(n: number): string {
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+export default function Dashboard({ documentCount, stats }: Props) {
   const cards: Card[] = [
-    { label: 'Total Spending', value: '$0.00' },
-    { label: 'Total Income', value: '$0.00' },
-    { label: 'Largest Transaction', value: '$0.00' },
+    {
+      label: 'Total Spending',
+      value: stats ? formatCurrency(stats.total_spending) : '—',
+    },
+    {
+      label: 'Total Income',
+      value: stats ? formatCurrency(stats.total_income) : '—',
+    },
+    {
+      label: 'Largest Transaction',
+      value: stats ? formatCurrency(stats.largest_transaction) : '—',
+    },
     {
       label: 'Documents Uploaded',
       value: `${documentCount} document${documentCount !== 1 ? 's' : ''}`,

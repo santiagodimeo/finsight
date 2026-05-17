@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Dashboard from '@/components/Dashboard';
+import Dashboard, { type Stats } from '@/components/Dashboard';
 import FileUpload from '@/components/FileUpload';
 import Chat, { type Message } from '@/components/Chat';
 
@@ -16,12 +16,29 @@ const PHRASES = [
 export default function Home() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-
+  const [stats, setStats] = useState<Stats | null>(null);
   const [subtitle, setSubtitle] = useState('');
 
   useEffect(() => {
     setSubtitle(PHRASES[Math.floor(Math.random() * PHRASES.length)]);
   }, []);
+
+  async function fetchStats() {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stats`);
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
+      }
+    } catch {
+      // endpoint not yet available — keep stats null
+    }
+  }
+
+  async function handleFilesChange(files: File[]) {
+    setUploadedFiles(files);
+    await fetchStats();
+  }
 
   async function handleSend(text: string) {
     setMessages((prev) => [...prev, { role: 'user', text }, { role: 'assistant', text: 'Thinking…' }]);
@@ -57,8 +74,8 @@ export default function Home() {
         </p>
       </header>
       <Chat messages={messages} onSend={handleSend} />
-      <Dashboard documentCount={uploadedFiles.length} />
-      <FileUpload uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} />
+      <Dashboard documentCount={uploadedFiles.length} stats={stats} />
+      <FileUpload uploadedFiles={uploadedFiles} onFilesChange={handleFilesChange} />
     </main>
   );
 }
