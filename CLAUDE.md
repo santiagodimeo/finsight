@@ -15,23 +15,36 @@ No test suite is configured. Type-checking via `npx tsc --noEmit` is the primary
 
 ## Architecture
 
-Next.js 15 App Router project. All UI is in `app/` (layout + page) and `components/`. No API routes exist yet — the backend integration is pending.
+Next.js 15 App Router project. All UI is in `app/` (layout + page) and `components/`. `app/page.tsx` is `'use client'` — it is the single state owner for the entire app and the React tree entry point.
 
 ### State ownership
 
-`app/page.tsx` is the single state owner for the entire app. It holds `uploadedFiles` (File[]) and `messages` (Message[]) and passes them down as props. Components are controlled — they receive state and callbacks, they do not manage their own top-level data.
+`app/page.tsx` holds `uploadedFiles` (File[]) and `messages` (Message[]) and passes them down as props. Components are controlled — they receive state and callbacks, they do not manage their own top-level data.
 
 ### Components
 
 | Component | Role |
 |---|---|
 | `Chat` | Scrollable message history + input form. Receives `messages` and `onSend`. |
-| `Dashboard` | 4 static stat cards. Only live prop is `documentCount` from `uploadedFiles.length`. |
+| `Dashboard` | 4 stat cards. Only live prop is `documentCount` from `uploadedFiles.length`. |
 | `FileUpload` | Drag-and-drop + file picker. Accepts PDF, CSV, PNG, JPG. Appends to parent's `uploadedFiles`. |
+
+### Backend API
+
+The FastAPI backend (`finsight-server`, Supabase RAG) is live. Both endpoints are called with `NEXT_PUBLIC_API_URL` as the base.
+
+| Method | Path | Request | Response |
+|---|---|---|---|
+| `POST` | `/upload` | `multipart/form-data` with `file` field | — |
+| `POST` | `/query` | `{ question: string }` | `{ answer: string }` |
+
+`FileUpload` fires `/upload` for each file immediately after selection. `Chat` fires `/query` on send, optimistically appending a `"Thinking…"` assistant message that gets replaced with the real answer (or an error string if `!res.ok`).
+
+The env var `NEXT_PUBLIC_API_URL` is set in `.env.local` and points to the deployed API Gateway URL. For local backend development, set it to `http://localhost:8000`.
 
 ### Design system
 
-The SRCL (sacred.computer) terminal aesthetic is applied via CSS custom properties only — not npm components. `app/srcl.css` is the raw global.css fetched from the `internet-development/www-sacred` GitHub repo. It is imported before Tailwind in `app/globals.css`:
+The SRCL (sacred.computer) terminal aesthetic is applied via CSS custom properties only — not npm components. `app/srcl.css` is the raw global.css from the `internet-development/www-sacred` GitHub repo. It is imported before Tailwind in `app/globals.css`:
 
 ```css
 @import "./srcl.css";
@@ -61,5 +74,4 @@ Configured for Replit Cloud Run via `.replit`. The `--hostname 0.0.0.0` flag in 
 
 ## Pending work
 
-- Wire `Chat` and `FileUpload` to the finsight-server RAG API (FastAPI, Supabase, at `/Users/work/Development/Projects/finsight-server`).
-- `Dashboard` stat cards (Total Spending, Total Income, Largest Transaction) are hardcoded to `$0.00` and need real data from the backend.
+- `Dashboard` stat cards (Total Spending, Total Income, Largest Transaction) are hardcoded to `$0.00` — needs a backend endpoint to return parsed financial summaries.
