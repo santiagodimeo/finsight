@@ -19,9 +19,20 @@ export default function FileUpload({ uploadedFiles, onFilesChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  function appendFiles(incoming: FileList | null) {
+  async function appendFiles(incoming: FileList | null) {
     if (!incoming || incoming.length === 0) return;
-    onFilesChange([...uploadedFiles, ...Array.from(incoming)]);
+    const newFiles = Array.from(incoming);
+    onFilesChange([...uploadedFiles, ...newFiles]);
+
+    for (const file of newFiles) {
+      const form = new FormData();
+      form.append('file', file);
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, { method: 'POST', body: form });
+      } catch {
+        console.error(`Failed to upload ${file.name}`);
+      }
+    }
   }
 
   function handleDrop(e: React.DragEvent) {
